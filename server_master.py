@@ -1,6 +1,8 @@
 import logging
 import time
 from concurrent import futures
+import ast
+import operator
 
 import grpc
 
@@ -13,12 +15,35 @@ _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 class CalculatorMaster(calculator_pb2_grpc.CalculatorServicer):
 
     def Calculate(self, request, context):
-        print("Received: " + request.expression)
-        expr = request.expression
+        result = self.arithmetic_eval(request.expression)
+        return calculator_pb2.CalculationResponse(result=result, error=False)
 
-        response = calculator_pb2.CalculationResponse(result=99, error=False)
+    @staticmethod
+    def arithmetic_eval(s):
+        root_node = ast.parse(s, mode='eval')
 
-        return response
+        # available operations
+        bin_options = {
+            ast.Add: operator.add,
+            ast.Sub: operator.sub,
+            ast.Mult: operator.mul,
+            ast.Div: operator.truediv,
+            ast.Pow: operator.pow
+        }
+
+        def _eval(node):
+            if isinstance(node, ast.Expression):
+                return _eval(node.body)
+            elif isinstance(node, ast.Str):
+                return node.s
+            elif isinstance(node, ast.Num):
+                return node.n
+            elif isinstance(node, ast.BinOp):
+                return bin_options[type(node.op)](_eval(node.left), _eval(node.right))
+            else:
+                raise Exception('Unsupported type {}'.format(node))
+
+        return _eval(root_node.body)
 
 
 def serve():

@@ -8,12 +8,9 @@ import calculator_pb2_grpc
 
 
 def run():
-    # NOTE(gRPC Python Team): .close() is possible on a channel and should be
-    # used in circumstances in which the with statement does not fit the needs
-    # of the code.
     with grpc.insecure_channel('localhost:50051') as channel:
         stub = calculator_pb2_grpc.CalculatorStub(channel)
-        response = stub.Calculate(calculator_pb2.CalculationRequest(expression="2+3"))
+        response = stub.Calculate(calculator_pb2.CalculationRequest(expression="99*99"))
     print("Response from calculator: " + str(response.result))
 
 
