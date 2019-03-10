@@ -1,4 +1,4 @@
-#Distributed Calculator
+# Distributed Calculator
 Calculator that splits the calculation of a mathematical expression between multiple machines.
 
 ### Generate the stub files:
