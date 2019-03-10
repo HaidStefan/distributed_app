@@ -3,8 +3,8 @@ import logging
 
 import grpc
 
-import helloworld_pb2
-import helloworld_pb2_grpc
+import calculator_pb2
+import calculator_pb2_grpc
 
 
 def run():
@@ -12,9 +12,9 @@ def run():
     # used in circumstances in which the with statement does not fit the needs
     # of the code.
     with grpc.insecure_channel('localhost:50051') as channel:
-        stub = helloworld_pb2_grpc.GreeterStub(channel)
-        response = stub.SayHello(helloworld_pb2.HelloRequest(name='Stefan'))
-    print("Greeter client received: " + response.message)
+        stub = calculator_pb2_grpc.CalculatorStub(channel)
+        response = stub.Calculate(calculator_pb2.CalculationRequest(expression="2+3"))
+    print("Response from calculator: " + str(response.result))
 
 
 if __name__ == '__main__':
