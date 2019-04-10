@@ -28,7 +28,7 @@ class CalculatorMaster(calculator_pb2_grpc.CalculatorServicer):
             ast.Sub: operator.sub,
             ast.Mult: mul,
             ast.Div: div,
-            ast.Pow: operator.pow
+            ast.Pow: pow
         }
 
         def _eval(node):
@@ -59,6 +59,15 @@ def div(a, b):
         stub = calculator_pb2_grpc.CalculatorSlaveStub(channel)
 
         response = stub.DoOperation(calculator_pb2.OperationRequest(a=a, op='/', b=b))
+
+        return response.result
+
+
+def pow(a, b):
+    with grpc.insecure_channel('localhost:50053') as channel:
+        stub = calculator_pb2_grpc.CalculatorSlaveStub(channel)
+
+        response = stub.DoOperation(calculator_pb2.OperationRequest(a=a, op='**', b=b))
 
         return response.result
 
