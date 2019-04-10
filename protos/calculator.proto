@@ -4,15 +4,35 @@ service Calculator {
     //Calculates the result of a equation
     rpc Calculate (CalculationRequest) returns (CalculationResponse) {
     }
+
 }
 
-// The request message containing the user's name.
+service CalculatorSlave {
+
+    rpc DoOperation (OperationRequest) returns (OperationResponse) {
+    }
+}
+
+// The request message to the server master
 message CalculationRequest {
     string expression = 1;
 }
 
-// The response message containing the greetings
+// The response message of the server master
 message CalculationResponse {
     float result = 1;
-    bool error = 2;
+    bool error = 2; //flag if error occurred
+}
+
+// The request message to the server slave
+message OperationRequest {
+    float a = 1;
+    string op = 2;
+    float b = 3;
+}
+
+// The response message of the server slave
+message OperationResponse {
+    float result = 1;
+    bool error = 2; //flag if error occurred
 }

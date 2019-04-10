@@ -1,8 +1,13 @@
 # Distributed Calculator
 Calculator that splits the calculation of a mathematical expression between multiple machines.
 
+## Installing grpc tools:
+```python -m pip install grpcio-tools```
+
+```python -m pip install grpcio```
+
 ### Generate the stub files:
-```python -m grpc_tools.protoc -I ./protos --python_out=. --grpc_python_out=. ./protos/calculator.proto```
+```python -m grpc_tools.protoc -piI ./protos --python_out=. --grpc_python_out=. ./protos/calculator.proto```
 
 ### Explanation on resolving the AST
-https://stackoverflow.com/questions/20748202/valueerror-malformed-string-when-using-ast-literal-eval
+    https://stackoverflow.com/questions/20748202/valueerror-malformed-string-when-using-ast-literal-eval

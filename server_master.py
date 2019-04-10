@@ -26,8 +26,8 @@ class CalculatorMaster(calculator_pb2_grpc.CalculatorServicer):
         bin_options = {
             ast.Add: operator.add,
             ast.Sub: operator.sub,
-            ast.Mult: operator.mul,
-            ast.Div: operator.truediv,
+            ast.Mult: mul,
+            ast.Div: div,
             ast.Pow: operator.pow
         }
 
@@ -46,12 +46,29 @@ class CalculatorMaster(calculator_pb2_grpc.CalculatorServicer):
         return _eval(root_node.body)
 
 
+def mul(a, b):
+    print("mul called")
+    with grpc.insecure_channel('localhost:50052') as channel:
+        stub = calculator_pb2_grpc.CalculatorSlaveStub(channel)
+        response = stub.DoOperation(calculator_pb2.OperationRequest(a=a, op='*', b=b))
+        return response.result
+
+
+def div(a, b):
+    with grpc.insecure_channel('localhost:50052') as channel:
+        stub = calculator_pb2_grpc.CalculatorSlaveStub(channel)
+
+        response = stub.DoOperation(calculator_pb2.OperationRequest(a=a, op='/', b=b))
+
+        return response.result
+
+
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     calculator_pb2_grpc.add_CalculatorServicer_to_server(CalculatorMaster(), server)
-    server.add_insecure_port('[::]:50051')
+    server.add_insecure_port('localhost:50051')
     server.start()
-    print("Server started")
+    print("Server Master started")
     try:
         while True:
             time.sleep(_ONE_DAY_IN_SECONDS)
