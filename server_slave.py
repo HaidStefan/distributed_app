@@ -3,9 +3,7 @@ import operator
 import time
 from concurrent import futures
 from threading import Thread
-
 import grpc
-
 import calculator_pb2
 import calculator_pb2_grpc
 
@@ -32,7 +30,7 @@ class CalculatorSlave(calculator_pb2_grpc.CalculatorSlaveServicer):
 
     def DoOperation(self, request, context):
         result = self.operations[request.op](request.a, request.b)
-        return calculator_pb2.OperationResponse(result=result, error=False)
+        return calculator_pb2.OperationResponse(result=result, status=calculator_pb2.OperationResponse.SUCCESS)
 
 
 def start_server_slave(address, operations):

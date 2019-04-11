@@ -21,7 +21,12 @@ message CalculationRequest {
 // The response message of the server master
 message CalculationResponse {
     float result = 1;
-    bool error = 2; //flag if error occurred
+    enum Status {
+        SUCCESS = 0;
+        ZERO_DIVISION_ERROR = 1;
+        INVALID_FORMAT_ERROR = 2;
+    }
+    Status status = 2;
 }
 
 // The request message to the server slave
@@ -34,5 +39,11 @@ message OperationRequest {
 // The response message of the server slave
 message OperationResponse {
     float result = 1;
-    bool error = 2; //flag if error occurred
+    enum Status {
+        SUCCESS = 0;
+        ZERO_DIVISION_ERROR = 1;
+        INVALID_FORMAT_ERROR = 2;
+    }
+    Status status = 2;
 }
+

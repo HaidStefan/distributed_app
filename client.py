@@ -20,7 +20,13 @@ def run():
             with grpc.insecure_channel(ADDRESS_SERVER_MASTER) as channel:
                 stub = calculator_pb2_grpc.CalculatorStub(channel)
                 response = stub.Calculate(calculator_pb2.CalculationRequest(expression=usr_in))
-                print("The result is : " + str(response.result) + '\n')
+
+                if response.status == calculator_pb2.CalculationResponse.SUCCESS:
+                    print("The result is : " + str(response.result) + '\n')
+                elif response.status == calculator_pb2.CalculationResponse.ZERO_DIVISION_ERROR:
+                    print("Error: Divide by zero in expression")
+                else:
+                    print("Invalid format of expression")
 
 
 if __name__ == '__main__':

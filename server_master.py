@@ -17,8 +17,16 @@ ADDRESS_SERVER_SLAVE_2 = 'localhost:50053'
 class CalculatorMaster(calculator_pb2_grpc.CalculatorServicer):
 
     def Calculate(self, request, context):
-        result = self.arithmetic_eval(request.expression)
-        return calculator_pb2.CalculationResponse(result=result, error=False)
+        try:
+            result = self.arithmetic_eval(request.expression)
+            return calculator_pb2.CalculationResponse(result=result, status=calculator_pb2.CalculationResponse.SUCCESS)
+
+        except ZeroDivisionError:
+            return calculator_pb2.CalculationResponse(result=None,
+                                                      status=calculator_pb2.CalculationResponse.ZERO_DIVISION_ERROR)
+        except Exception:
+            return calculator_pb2.CalculationResponse(result=None,
+                                                      status=calculator_pb2.CalculationResponse.INVALID_FORMAT_ERROR)
 
     @staticmethod
     def arithmetic_eval(s):
@@ -41,7 +49,10 @@ class CalculatorMaster(calculator_pb2_grpc.CalculatorServicer):
             elif isinstance(node, ast.Num):
                 return node.n
             elif isinstance(node, ast.BinOp):
-                return bin_options[type(node.op)](_eval(node.left), _eval(node.right))
+                try:
+                    return bin_options[type(node.op)](_eval(node.left), _eval(node.right))
+                except ZeroDivisionError:  # pass exception of dividing by 0
+                    raise
             else:
                 raise Exception('Unsupported type {}'.format(node))
 
@@ -51,7 +62,10 @@ class CalculatorMaster(calculator_pb2_grpc.CalculatorServicer):
 def stub_mul(a, b): return do_operation_on_stub(a, '*', b, ADDRESS_SERVER_SLAVE_1)
 
 
-def stub_div(a, b): return do_operation_on_stub(a, '/', b, ADDRESS_SERVER_SLAVE_1)
+def stub_div(a, b):
+    if b == 0:
+        raise ZeroDivisionError
+    return do_operation_on_stub(a, '/', b, ADDRESS_SERVER_SLAVE_1)
 
 
 def stub_pow(a, b): return do_operation_on_stub(a, '**', b, ADDRESS_SERVER_SLAVE_2)
