@@ -8,7 +8,7 @@ service Calculator {
 }
 
 service CalculatorSlave {
-
+    //Message to execute a calculation on a server slave node
     rpc DoOperation (OperationRequest) returns (OperationResponse) {
     }
 }

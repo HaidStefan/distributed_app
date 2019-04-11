@@ -1,10 +1,11 @@
 from __future__ import print_function
 import logging
-
 import grpc
-
 import calculator_pb2
 import calculator_pb2_grpc
+
+# Settings
+ADDRESS_SERVER_MASTER = 'localhost:50051'
 
 
 def run():
@@ -16,10 +17,9 @@ def run():
         else:
             usr_in = input("Please enter term to calculate!\n")
 
-            with grpc.insecure_channel('localhost:50051') as channel:
+            with grpc.insecure_channel(ADDRESS_SERVER_MASTER) as channel:
                 stub = calculator_pb2_grpc.CalculatorStub(channel)
                 response = stub.Calculate(calculator_pb2.CalculationRequest(expression=usr_in))
-
                 print("The result is : " + str(response.result) + '\n')
 
 

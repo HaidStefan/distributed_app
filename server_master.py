@@ -3,13 +3,15 @@ import time
 from concurrent import futures
 import ast
 import operator
-
 import grpc
-
 import calculator_pb2
 import calculator_pb2_grpc
 
+# Settings
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
+ADDRESS_SERVER_MASTER = 'localhost:50051'
+ADDRESS_SERVER_SLAVE_1 = 'localhost:50052'
+ADDRESS_SERVER_SLAVE_2 = 'localhost:50053'
 
 
 class CalculatorMaster(calculator_pb2_grpc.CalculatorServicer):
@@ -26,9 +28,9 @@ class CalculatorMaster(calculator_pb2_grpc.CalculatorServicer):
         bin_options = {
             ast.Add: operator.add,
             ast.Sub: operator.sub,
-            ast.Mult: mul,
-            ast.Div: div,
-            ast.Pow: pow
+            ast.Mult: stub_mul,
+            ast.Div: stub_div,
+            ast.Pow: stub_pow
         }
 
         def _eval(node):
@@ -46,36 +48,26 @@ class CalculatorMaster(calculator_pb2_grpc.CalculatorServicer):
         return _eval(root_node.body)
 
 
-def mul(a, b):
-    print("mul called")
-    with grpc.insecure_channel('localhost:50052') as channel:
+def stub_mul(a, b): return do_operation_on_stub(a, '*', b, ADDRESS_SERVER_SLAVE_1)
+
+
+def stub_div(a, b): return do_operation_on_stub(a, '/', b, ADDRESS_SERVER_SLAVE_1)
+
+
+def stub_pow(a, b): return do_operation_on_stub(a, '**', b, ADDRESS_SERVER_SLAVE_2)
+
+
+def do_operation_on_stub(a, op, b, address):
+    with grpc.insecure_channel(address) as channel:
         stub = calculator_pb2_grpc.CalculatorSlaveStub(channel)
-        response = stub.DoOperation(calculator_pb2.OperationRequest(a=a, op='*', b=b))
-        return response.result
-
-
-def div(a, b):
-    with grpc.insecure_channel('localhost:50052') as channel:
-        stub = calculator_pb2_grpc.CalculatorSlaveStub(channel)
-
-        response = stub.DoOperation(calculator_pb2.OperationRequest(a=a, op='/', b=b))
-
-        return response.result
-
-
-def pow(a, b):
-    with grpc.insecure_channel('localhost:50053') as channel:
-        stub = calculator_pb2_grpc.CalculatorSlaveStub(channel)
-
-        response = stub.DoOperation(calculator_pb2.OperationRequest(a=a, op='**', b=b))
-
+        response = stub.DoOperation(calculator_pb2.OperationRequest(a=a, op=op, b=b))
         return response.result
 
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     calculator_pb2_grpc.add_CalculatorServicer_to_server(CalculatorMaster(), server)
-    server.add_insecure_port('localhost:50051')
+    server.add_insecure_port(ADDRESS_SERVER_MASTER)
     server.start()
     print("Server Master started")
     try:
